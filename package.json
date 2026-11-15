@@ -1,0 +1,18 @@
+{
+  "name": "extractor-de-m3u8-para-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.21.1",
+    "express": "^5.3.0",
+    "puppeteer": "^25.17.0"
+  }
+}
