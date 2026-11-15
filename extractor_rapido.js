@@ -1,18 +1,23 @@
-const puppeteer = require('puppeteer-core'); 
+const puppeteer = require('puppeteer-core');
 const express = require('express');
 const axios = require('axios');
 const { URL } = require('url');
 
 const app = express();
-const PORT = 5000;
-// ⚠️ CAMBIA ESTO POR TU IP LOCAL (la de tu PC) o la IP de tu VPS
-const IP_LOCAL = "http://192.168.18.116:5000"; 
 
-// 🔑 CONFIGURACIÓN DE BROWSERLESS
-const BROWSERLESS_TOKEN = "2VdNseZ3Sb7Oixb006d70adfd7a24412ace4e73c091132717"; // ⚠️ PEGA TU TOKEN AQUÍ
+// ✅ Railway usa un puerto dinámico. Escuchamos en el que nos asigne (o 8080).
+const PORT = process.env.PORT || 8080; 
+
+// ✅ Dominio dinámico de Railway. Si falla, usa tu URL actual como respaldo.
+const IP_LOCAL = process.env.RAILWAY_PUBLIC_DOMAIN 
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
+    : "https://reliable-consideration-production-9a477ae3.up.railway.app"; 
+
+// 🔑 CONFIGURACIÓN DE BROWSERLESS (Toma el token de las variables de Railway)
+const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN; 
 const BROWSERLESS_ENDPOINT = `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}`;
 
-const urlCache = {}; // Caché de videos
+const urlCache = {}; // Caché en memoria para los videos
 
 // ==========================================
 // 1. EXTRAER Y REGISTRAR (Usando Browserless)
@@ -28,7 +33,7 @@ app.get('/extract', async (req, res) => {
     let m3u8Url = null;
 
     try {
-        // ✅ CONEXIÓN A BROWSERLESS
+        // Conexión al navegador remoto de Browserless
         const browser = await puppeteer.connect({
             browserWSEndpoint: BROWSERLESS_ENDPOINT,
         });
@@ -40,6 +45,7 @@ app.get('/extract', async (req, res) => {
             const type = request.resourceType();
             const url = request.url();
 
+            // Capturar el .m3u8 real
             if (url.includes('.m3u8') && url.includes('morencius.com')) {
                 if (!m3u8Url) {
                     m3u8Url = url;
@@ -48,6 +54,7 @@ app.get('/extract', async (req, res) => {
                 return;
             }
 
+            // Bloquear imágenes y css para ir más rápido
             if (['image', 'stylesheet', 'font', 'media'].includes(type)) {
                 request.abort();
             } else {
@@ -62,7 +69,7 @@ app.get('/extract', async (req, res) => {
             await new Promise(r => setTimeout(r, 100));
         }
 
-        await browser.close(); // Importante cerrar la sesión remota
+        await browser.close(); // Cerrar sesión en Browserless
 
         if (m3u8Url) {
             urlCache[videoName] = {
@@ -196,6 +203,8 @@ app.get('/stream', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Extractor + Proxy Node.js en ${IP_LOCAL} (Usando Browserless)`);
+// ✅ IMPORTANTE: Escuchar en 0.0.0.0 para que Railway asigne el tráfico correctamente
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+    console.log(`🔗 URL Base generada: ${IP_LOCAL}`);
 });
