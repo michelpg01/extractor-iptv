@@ -1,18 +1,14 @@
 {
-  "name": "extractor-de-m3u8-para-app",
+  "name": "extractor-iptv",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Extractor y proxy para IPTV",
+  "main": "extractor_rapido.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node extractor_rapido.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "axios": "^1.21.1",
-    "express": "^5.3.0",
-    "puppeteer": "^25.17.0"
+    "axios": "^1.6.8",
+    "express": "^4.19.2",
+    "puppeteer-core": "^22.6.0"
   }
 }
